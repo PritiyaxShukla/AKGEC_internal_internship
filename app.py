@@ -1,23 +1,9 @@
-"""
-Flask web app that serves the loan-approval Decision Tree model.
-
-Run:
-    python app.py
-Then open http://127.0.0.1:5000 in a browser.
-
-The app renders an HTML form (templates/index.html). On submit it validates the
-inputs, runs them through `predict_utils.predict` (same preprocessing as training),
-and re-renders the page with the decision and the model's confidence.
-"""
-
 from flask import Flask, render_template, request
 
 from predict_utils import FEATURE_INFO, load_bundle, predict
 
 app = Flask(__name__)
 
-# Load the model once, at start-up, so every request is fast.
-# If the model file is missing we keep the app running and show a helpful error.
 try:
     BUNDLE = load_bundle()
     MODEL_ERROR = None
@@ -27,11 +13,6 @@ except FileNotFoundError as exc:
 
 
 def validate_form(form):
-    """
-    Validate raw form values. Returns (values_dict, errors_list).
-    `values_dict` contains parsed floats for valid fields (str for invalid ones,
-    so the form can be re-populated with what the user typed).
-    """
     values, errors = {}, []
     for name, info in FEATURE_INFO.items():
         raw = (form.get(name) or "").strip()
@@ -47,7 +28,6 @@ def validate_form(form):
             continue
         if num < info["min"] or num > info["max"]:
             errors.append(f"{info['label']} must be between {info['min']:,} and {info['max']:,}.")
-        # Display whole numbers without a trailing ".0" when re-populating the form.
         values[name] = int(num) if num == int(num) else num
     return values, errors
 
@@ -56,7 +36,6 @@ def validate_form(form):
 def index():
     result = None
     errors = []
-    # Sensible defaults so the form is pre-filled on first load.
     values = {"Age": 30, "Income": 95000, "LoanAmount": 8000, "CreditScore": 700}
 
     if request.method == "POST":
@@ -68,6 +47,7 @@ def index():
                 result = predict(values, bundle=BUNDLE)
 
     metrics = BUNDLE["metrics"] if BUNDLE else None
+    tree_info = BUNDLE.get("tree_info") if BUNDLE else None
     return render_template(
         "index.html",
         feature_info=FEATURE_INFO,
@@ -75,12 +55,12 @@ def index():
         result=result,
         errors=errors,
         metrics=metrics,
+        tree_info=tree_info,
     )
 
 
 @app.route("/health")
 def health():
-    """Simple health/readiness endpoint."""
     return {"status": "ok", "model_loaded": BUNDLE is not None}
 
 

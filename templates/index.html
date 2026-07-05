@@ -59,6 +59,16 @@
         </section>
         {% endif %}
 
+        {% if tree_info %}
+        <footer class="metrics">
+            <span>Decision Tree structure</span>
+            <span>Max depth : {{ tree_info.max_depth }}</span>
+            <span>Tree depth : {{ tree_info.depth }}</span>
+            <span>Nodes : {{ tree_info.nodes }}</span>
+            <span>Leaves : {{ tree_info.leaves }}</span>
+        </footer>
+        {% endif %}
+
         <footer class="metrics">
             {% if metrics %}<span>Accuracy : {{ '%.1f'|format(metrics.accuracy * 100) }}%</span>{% endif %}
             <span>model : Decision Tree Classifier</span>

@@ -1,28 +1,9 @@
-"""
-Local test / sanity-check script for the loan-approval model.
-
-Usage
------
-Run the built-in sample applicants:
-
-    python test_model.py
-
-Test a single custom applicant from the command line:
-
-    python test_model.py --age 30 --income 95000 --loan 8000 --credit 700
-
-This script loads model/loan_model.pkl (created by the training notebook) through
-the shared `predict_utils` module, so it exercises the exact same preprocessing +
-inference path that the Flask app uses.
-"""
-
 import argparse
 import sys
 
-from predict_utils import FEATURE_INFO, load_bundle, predict
+from predict_utils import load_bundle, predict
 
 
-# A handful of representative applicants covering strong / weak / borderline cases.
 SAMPLE_APPLICANTS = [
     {"Age": 30, "Income": 95000,  "LoanAmount": 8000,  "CreditScore": 700},
     {"Age": 22, "Income": 13000,  "LoanAmount": 30000, "CreditScore": 520},
@@ -82,7 +63,7 @@ def run_single(bundle, args):
 
 
 def build_parser():
-    p = argparse.ArgumentParser(description="Test the loan-approval Decision Tree model.")
+    p = argparse.ArgumentParser(description="Test the loan approval Decision Tree model.")
     p.add_argument("--age", type=float, help="Applicant age in years")
     p.add_argument("--income", type=float, help="Annual income")
     p.add_argument("--loan", type=float, help="Requested loan amount")
@@ -104,7 +85,7 @@ def main():
     single_args = [args.age, args.income, args.loan, args.credit]
     if any(v is not None for v in single_args):
         if any(v is None for v in single_args):
-            print("ERROR: to test a custom applicant provide ALL of "
+            print("ERROR: to test a custom applicant provide all of "
                   "--age --income --loan --credit.", file=sys.stderr)
             sys.exit(2)
         run_single(bundle, args)

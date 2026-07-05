@@ -1,20 +1,12 @@
-# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 venv/
 env/
-
-# Jupyter
 .ipynb_checkpoints/
-
-# Trained model artifact — regenerate by running the training notebook
 model/*.pkl
-
-# Editor / tooling
-.claude/
-
-# OS
+*.pem
+loan-key.pem
 .DS_Store
 Thumbs.db

@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-#
-# One-shot provisioning script for an Ubuntu EC2 instance.
-#
-# Architecture:
-#   Internet -> Nginx (port 80) -> Gunicorn (127.0.0.1:8000) -> Flask app
-#
-# It installs dependencies, trains the model, runs the app under gunicorn as a
-# systemd service, and puts Nginx in front as a reverse proxy on port 80.
-#
-# Usage (run as the 'ubuntu' user on the instance):
-#     bash deploy/setup_ec2.sh
-#
 set -euo pipefail
 
 APP_DIR="$HOME/AKGEC_internal_internship"
@@ -33,7 +21,7 @@ python3 -m venv .venv
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install -r requirements.txt
 
-echo ">>> [4/6] Training the model (creates model/loan_model.pkl)..."
+echo ">>> [4/6] Training the model..."
 ./.venv/bin/python train.py
 
 echo ">>> [5/6] Installing and starting the gunicorn systemd service..."
@@ -43,15 +31,14 @@ sudo systemctl enable --now loanapp
 sleep 2
 sudo systemctl --no-pager status loanapp || true
 
-echo ">>> [6/6] Configuring Nginx reverse proxy (port 80 -> gunicorn 8000)..."
+echo ">>> [6/6] Configuring Nginx reverse proxy..."
 sudo cp deploy/nginx-loanapp.conf /etc/nginx/sites-available/loanapp
 sudo ln -sf /etc/nginx/sites-available/loanapp /etc/nginx/sites-enabled/loanapp
-sudo rm -f /etc/nginx/sites-enabled/default   # remove Nginx's default welcome site
+sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
-# Best-effort public IP (IMDSv2, falls back to a placeholder).
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
     -H "X-aws-ec2-metadata-token-ttl-seconds: 60" 2>/dev/null || true)
 PUBIP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
