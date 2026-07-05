@@ -1,0 +1,5 @@
+# Extra dependencies only needed to run loan_prediction_training.ipynb
+# (the standalone train.py does not need these).
+jupyter>=1.0
+matplotlib>=3.7
+seaborn>=0.12
